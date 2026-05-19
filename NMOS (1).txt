@@ -1,0 +1,50 @@
+(sdegeo:create-rectangle (position 0 0 0) (position 0.05 0.11 0) "Silicon" "subregion")
+(sdegeo:create-rectangle (position 0 0 0) (position 0.01 0.04 0) "Silicon" "sourceregion")
+(sdegeo:create-rectangle (position 0 0.07 0) (position 0.01 0.11 0) "Silicon" "drainregion")
+
+(sde:set-default-material "SiO2")
+(sdegeo:create-rectangle (position 0 0.04 0) (position -0.001 0.07 0) "SiO2" "oxideregion")
+
+(sde:set-default-material "PolySilicon")
+(sdegeo:create-rectangle (position -0.001 0.04 0) (position -0.021 0.07 0) "PolySilicon" "gateregion")
+
+(sdegeo:define-contact-set "gate" 4 (color:rgb 1 0 0) "##")
+(sdegeo:define-contact-set "source" 4 (color:rgb 1 0 0) "##")
+(sdegeo:define-contact-set "drain" 4 (color:rgb 1 0 0) "##")
+(sdegeo:define-contact-set "substrate" 4 (color:rgb 1 0 0) "##")
+
+(sdegeo:set-current-contact-set "source")
+(sdegeo:set-contact (list (car (find-edge-id (position 0 0.02 0)))) "source")
+
+(sdegeo:set-current-contact-set "drain")
+(sdegeo:set-contact (list (car (find-edge-id (position 0 0.09 0)))) "drain")
+
+(sdegeo:set-current-contact-set "gate")
+(sdegeo:set-contact (list (car (find-edge-id (position -0.021 0.055 0)))) "gate")
+
+(sdegeo:set-current-contact-set "substrate")
+(sdegeo:set-contact (list (car (find-edge-id (position 0.05 0.055 0)))) "substrate")
+
+(sdedr:define-constant-profile "ConstantProfileDefinition.sub" "BoronActiveConcentration" 1e+16)
+(sdedr:define-constant-profile-region "ConstantProfilePlacement.sub" "ConstantProfileDefinition.sub" "subregion")
+
+(sdedr:define-constant-profile "ConstantProfileDefinition.source" "ArsenicActiveConcentration" 1e+20)
+(sdedr:define-constant-profile-region "ConstantProfilePlacement.source" "ConstantProfileDefinition.source" "sourceregion")
+
+(sdedr:define-constant-profile "ConstantProfileDefinition.drain" "ArsenicActiveConcentration" 1e+20)
+(sdedr:define-constant-profile-region "ConstantProfilePlacement.drain" "ConstantProfileDefinition.drain" "drainregion")
+
+(sdedr:define-refeval-window "RefEvalWin.all" "Rectangle" (position -0.021 0 0) (position 0.05 0.11 0))
+(sdedr:define-refinement-size "RefinementDefinition.all" 0.002 0.002 0.0002 0.0002)
+(sdedr:define-refinement-placement "RefinementPlacement.all" "RefinementDefinition.all" (list "window" "RefEvalWin.all"))
+
+(sdedr:define-refeval-window "RefEvalWin.channel" "Rectangle" (position -0.021 0 0) (position 0.01 0.11 0))
+(sdedr:define-multibox-size "MultiboxDefinition.channel" 0.001 0.001 0.0001 0.0001 1 1)
+(sdedr:define-multibox-placement "MultiboxPlacement.channel" "MultiboxDefinition.channel" "RefEvalWin.channel")
+
+(sde:set-meshing-command "snmesh -a")
+(sdedr:append-cmd-file "")
+(sde:build-mesh "-a" "n@node@")
+(system:command "svisual sdemodel_msh.tdr &")
+(sde:xshow-material "nomat")
+(sde:save-model "n@node@")

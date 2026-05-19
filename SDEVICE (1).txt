@@ -1,0 +1,64 @@
+File {
+   * input files:
+   Grid=    "@tdr@"
+   Parameter="sdevice.par"
+   * output files:
+   Plot=    "@tdrdat@"
+   Current="@plot@"
+   Output= "@log@"
+}
+
+Electrode {
+   { Name="gate" Voltage=0 }
+   { Name="source" Voltage=0 }
+   { Name="drain" Voltage=0 }
+   { Name="substrate" Voltage=0 }
+}
+
+Physics {
+   Temperature = 300
+   
+   Fermi
+   EffectiveIntrinsicDensity(Slotboom)
+
+   Mobility(
+      DopingDep
+      HighFieldSaturation
+      Enormal
+   )
+
+   Recombination(
+      SRH
+   )
+}
+
+Math {
+   -CheckUndefinedModels
+   Extrapolate
+   RelErrControl
+}
+
+Solve {
+   Coupled { Poisson }
+   Coupled { Poisson Electron Hole }
+
+
+   Quasistationary(
+      InitialStep=0.01
+      MaxStep=0.1
+      MinStep=1e-5
+      Goal { Name="drain" Voltage=@vd@ }
+   ) {
+      Coupled { Poisson Electron Hole }
+   }
+
+ 
+   Quasistationary(
+      InitialStep=0.01
+      MaxStep=0.05
+      MinStep=1e-5
+      Goal { Name="gate" Voltage=@vg@ }
+   ) {
+      Coupled { Poisson Electron Hole }
+   }
+}
